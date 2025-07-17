@@ -1,3 +1,4 @@
+# 🔄 Forzar redeploy en Render
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
