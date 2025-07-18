@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.service_category import ServiceCategory
 from schemas.service_category import ServiceCategoryCreate
+from typing import List
+from schemas.service_category import ServiceCategoryOut
+
+
 
 router = APIRouter(prefix="/categories", tags=["Service Categories"])
 
@@ -23,3 +27,8 @@ def create_category(category: ServiceCategoryCreate, db: Session = Depends(get_d
     db.commit()
     db.refresh(new_category)
     return new_category
+
+@router.get("/", response_model=List[ServiceCategoryOut])
+def list_categories(db: Session = Depends(get_db)):
+    categories = db.query(ServiceCategory).filter_by(is_active=True).all()
+    return categories
