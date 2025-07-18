@@ -6,6 +6,8 @@ from models.request import ServiceRequest
 from services.dependencies import get_current_user
 from models.user import User
 from typing import List
+from schemas.request import RequestRating  # ✅ Importar el nuevo esquema
+
 
 router = APIRouter(prefix="/requests", tags=["Solicitudes"])
 
@@ -97,3 +99,33 @@ def get_my_requests(
         raise HTTPException(status_code=403, detail="Solo los clientes pueden ver sus solicitudes")
 
     return db.query(ServiceRequest).filter(ServiceRequest.client_id == current_user.id).all()
+
+# ⭐ Calificar solicitud completada (cliente)
+@router.put("/{request_id}/rate", response_model=RequestOut)
+def rate_completed_request(
+    request_id: str,
+    data: RequestRating,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "cliente":
+        raise HTTPException(status_code=403, detail="Solo los clientes pueden calificar solicitudes")
+
+    request = db.query(ServiceRequest).filter(ServiceRequest.id == request_id).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+
+    if request.client_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No puedes calificar esta solicitud")
+
+    if request.status != "completado":
+        raise HTTPException(status_code=400, detail="Solo puedes calificar solicitudes completadas")
+
+    request.rating = data.rating
+    request.review = data.review
+
+    db.commit()
+    db.refresh(request)
+
+    return request
