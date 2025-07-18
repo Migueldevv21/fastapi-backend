@@ -129,3 +129,39 @@ def rate_completed_request(
     db.refresh(request)
 
     return request
+@router.put("/{request_id}/complete", response_model=RequestOut)
+def complete_request(
+    request_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "proveedor":
+        raise HTTPException(status_code=403, detail="Solo los proveedores pueden completar solicitudes")
+
+    request = db.query(ServiceRequest).filter(ServiceRequest.id == request_id).first()
+
+    if not request:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+
+    if request.provider_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No puedes completar esta solicitud")
+
+    if request.status != "aceptado":
+        raise HTTPException(status_code=400, detail="Solo puedes completar solicitudes aceptadas")
+
+    request.status = "completado"
+    db.commit()
+    db.refresh(request)
+
+    return request
+# ✅ Ver solicitudes aceptadas por el proveedor
+@router.get("/provider", response_model=List[RequestOut])
+def get_provider_requests(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "proveedor":
+        raise HTTPException(status_code=403, detail="Solo los proveedores pueden ver sus solicitudes")
+
+    solicitudes = db.query(ServiceRequest).filter(ServiceRequest.provider_id == current_user.id).all()
+    return solicitudes
