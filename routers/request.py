@@ -7,6 +7,7 @@ from services.dependencies import get_current_user
 from models.user import User
 from typing import List
 from schemas.request import RequestRating  # ✅ Importar el nuevo esquema
+from sqlalchemy.orm import joinedload
 
 
 router = APIRouter(prefix="/requests", tags=["Solicitudes"])
@@ -163,5 +164,9 @@ def get_provider_requests(
     if current_user.role != "proveedor":
         raise HTTPException(status_code=403, detail="Solo los proveedores pueden ver sus solicitudes")
 
-    solicitudes = db.query(ServiceRequest).filter(ServiceRequest.provider_id == current_user.id).all()
+    solicitudes = db.query(ServiceRequest)\
+        .options(joinedload(ServiceRequest.client))\
+        .filter(ServiceRequest.provider_id == current_user.id)\
+        .all()
+
     return solicitudes

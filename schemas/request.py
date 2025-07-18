@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
+from schemas.user import UserPublic
 
 class RequestCreate(BaseModel):
     title: str
@@ -26,9 +27,10 @@ class RequestOut(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
-    # ⭐ Campos de calificación
     rating: Optional[float] = None
     review: Optional[str] = None
+
+    client: Optional[UserPublic] = None  # ✅ relación anidada
 
     class Config:
         from_attributes = True

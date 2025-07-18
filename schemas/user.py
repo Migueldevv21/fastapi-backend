@@ -24,3 +24,10 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserPublic(BaseModel):
+    id: UUID
+    name: str
+
+    class Config:
+        from_attributes = True
