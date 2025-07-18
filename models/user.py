@@ -13,6 +13,6 @@ class User(Base):
     role = Column(String, nullable=False)  # "cliente" o "proveedor"
     is_available = Column(Boolean, default=False)
 
-    # 👇 Nuevos campos para ubicación
+    # ✅ Campos opcionales para ubicación
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)

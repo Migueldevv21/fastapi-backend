@@ -7,6 +7,8 @@ class RequestCreate(BaseModel):
     title: str
     description: str
     category: str
+    latitude: Optional[float] = None  # ✅ Coordenadas opcionales
+    longitude: Optional[float] = None
 
 class RequestOut(BaseModel):
     id: UUID
@@ -16,7 +18,9 @@ class RequestOut(BaseModel):
     status: str
     created_at: datetime
     client_id: UUID
-    provider_id: Optional[UUID] = None  # si usas provider_id en el modelo
+    provider_id: Optional[UUID] = None
+    latitude: Optional[float] = None  # ✅ Coordenadas devueltas
+    longitude: Optional[float] = None
 
     class Config:
         from_attributes = True
