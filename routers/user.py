@@ -33,24 +33,28 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def get_my_profile(current_user: User = Depends(get_current_user)):
     return current_user
 
-@router.put("/me", response_model=schemas.UserOut)  # ✅ Nuevo endpoint para editar perfil
+@router.put("/me", response_model=schemas.UserOut)
 def update_my_profile(
     updates: schemas.UserUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if updates.name is not None:
-        current_user.name = updates.name
-    if updates.email is not None:
-        current_user.email = updates.email
-    if updates.latitude is not None:
-        current_user.latitude = updates.latitude
-    if updates.longitude is not None:
-        current_user.longitude = updates.longitude
+    update_data = updates.dict(exclude_unset=True)
 
-    db.commit()
-    db.refresh(current_user)
-    return current_user
+    # Validación extra: evita email vacío
+    if 'email' in update_data and not update_data['email']:
+        raise HTTPException(status_code=400, detail="El correo no puede estar vacío")
+
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
+
+    try:
+        db.commit()
+        db.refresh(current_user)
+        return current_user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 @router.get("/providers", response_model=List[schemas.UserOut])
 def get_providers(
