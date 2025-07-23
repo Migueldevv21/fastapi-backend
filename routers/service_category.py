@@ -8,7 +8,7 @@ from schemas.service_category import ServiceCategoryOut
 
 
 
-router = APIRouter(prefix="/categories", tags=["Service Categories"])
+router = APIRouter(prefix="/service-category", tags=["Service Categories"])
 
 @router.post("/", status_code=201)
 def create_category(category: ServiceCategoryCreate, db: Session = Depends(get_db)):
